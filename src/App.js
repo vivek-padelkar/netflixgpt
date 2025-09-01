@@ -1,10 +1,15 @@
 import './App.css';
 import Body from './components/Body/Body.component';
+import { Provider, useDispatch } from 'react-redux';
+import store from './utils/store/store.js';
+
 
 function App() {
   return (
     <div className="App">
-      <Body />
+      <Provider store={store}>
+        <Body />
+      </Provider>
     </div>
   );
 }
