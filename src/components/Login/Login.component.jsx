@@ -4,9 +4,12 @@ import { NETFLIX_BG_URL } from '../../utils/constants'
 import { validateEmailAndpassword } from './validations/validate';
 import { firebaseSignIn, firebaseSignUp } from '../../utils/common';
 import { useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
+import { addUser } from '../../utils/store/slice/userSlice';
 
 const Login = () => {
     const navigate = useNavigate()
+    const dispatch = useDispatch()
     const [isSignup, setIsSignUp] = useState(false)
     const [loading, setLoading] = useState(false)
     const refEmail = useRef(null)
@@ -22,7 +25,9 @@ const Login = () => {
             } else {
                 if (isSignup) {
                     setLoading(true)
-                    await firebaseSignUp(refEmail.current.value, refPassword.current.value, refName.current.value)
+                    const user = await firebaseSignUp(refEmail.current.value, refPassword.current.value, refName.current.value)
+                    const { uid, email, displayName, photoURL } = user
+                    dispatch(addUser({ uid, email, displayName, photoURL }))
                     toast.success('User created Successfully')
                     navigate('/browse')
                     setLoading(false)

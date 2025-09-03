@@ -2,8 +2,10 @@ import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from 'react-redux'
 import Logo from '../../assets/logo.png'
-import { removeUser } from "../../utils/store/slice/userSlice";
+import { addUser, removeUser } from "../../utils/store/slice/userSlice";
 import { firebaseSignOut } from "../../utils/common";
+import { onAuthStateChanged } from 'firebase/auth';
+import { auth } from '../../config/firbase.config.js';
 
 const Header = () => {
     const [isOpen, setIsOpen] = useState(false);
@@ -16,6 +18,21 @@ const Header = () => {
     const shouldHideMenu = hideMenuRoutes.includes(location.pathname)
     //********************************** */
     // Close dropdown when clicking outside
+
+    useEffect(() => {
+        const unsubscribe = onAuthStateChanged(auth, (user) => {
+            if (user) {
+                const { uid, email, displayName, photoURL } = user
+                dispatch(addUser({ uid, email, displayName, photoURL }))
+                navigate("/browse")
+            } else {
+                dispatch(removeUser())
+                navigate("/")
+            }
+        })
+        return () => unsubscribe()
+    }, [])
+
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -30,14 +47,14 @@ const Header = () => {
     const handleSignOut = async () => {
         await firebaseSignOut()
         dispatch(removeUser())
-        navigate("/")
+        // navigate("/")
     }
 
     const user = useSelector(state => state.user)
 
     return (
         <header className="fixed top-0 left-0 w-full z-20">
-            <div className="flex items-center justify-between px-6 py-3">
+            <div className="flex items-center flex-col sm:flex-row justify-between px-6 py-3">
 
                 {/* Left: Logo */}
                 <div className="flex items-center">
@@ -62,15 +79,6 @@ const Header = () => {
                                                 onClick={() => setIsOpen(!isOpen)}
                                             >
                                                 <img src={user.photoURL} className='w-full h-full' alt='user image' title={user ? 'Logout' : 'Login'} />
-                                                {/* <svg
-                                                className={`w-10 h-10 transition-transform ${isOpen ? "rotate-180" : "rotate-0"
-                                                    }`}
-                                                fill="none"
-                                                stroke="currentColor"
-                                                viewBox="0 0 24 24"
-                                            >
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                                            </svg> */}
                                             </div>
                                             {isOpen && (
                                                 <div className="absolute right-0 mt-2 w-40 bg-black border border-gray-100

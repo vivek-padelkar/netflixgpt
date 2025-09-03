@@ -3,11 +3,11 @@ import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, si
 
 const firebaseSignUp = async (email, password, displayName) => {
     try {
-        console.log(email, password, displayName)
+        const photoURL = process.env.REACT_APP_userDefaultImg
         const userCredential = await createUserWithEmailAndPassword(auth, email, password)
-        await updateProfile(userCredential.user, { displayName, photoURL: process.env.REACT_APP_userDefaultImg })
+        await updateProfile(userCredential.user, { displayName, photoURL })
         console.log('updated')
-        return userCredential.user;
+        return auth.currentUser;
     } catch (error) {
         throw error;
     }
